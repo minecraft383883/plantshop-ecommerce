@@ -6,9 +6,9 @@ class PlantIdentificationService {
     try {
       const apiKey = process.env.PLANTNET_API_KEY;
       
-      // Verificar si hay API key válida
-      if (!apiKey || apiKey === 'tu_api_key_aqui' || apiKey.length < 20) {
-        console.log('🌿 Modo Demo: No hay API key válida configurada');
+      // Verificar si hay API key
+      if (!apiKey || apiKey === 'tu_api_key_aqui') {
+        console.log('🌿 Modo Demo: No hay API key configurada');
         return this.getDemoResults();
       }
 
@@ -68,24 +68,22 @@ class PlantIdentificationService {
         };
 
       } catch (apiError) {
-        // Capturar errores de API sin romper el backend
-        console.log('⚠️ Error con PlantNet API (usando modo demo):', {
+        console.error('❌ Error con PlantNet API:', {
           status: apiError.response?.status,
           message: apiError.response?.data?.message || apiError.message,
         });
 
-        // Si es error 401/403, la API key es inválida
-        if (apiError.response?.status === 401 || apiError.response?.status === 403) {
-          console.log('🔑 API Key inválida - Cambiando a modo demo');
+        // Si es error 403, la API key es inválida
+        if (apiError.response?.status === 403) {
+          console.error('🔑 API Key inválida o sin permisos');
         }
 
-        // Fallback a demo sin lanzar error
+        // Fallback a demo
         return this.getDemoResults();
       }
 
     } catch (error) {
-      // Error general - no romper el backend
-      console.log('⚠️ Error general (usando modo demo):', error.message);
+      console.error('❌ Error general:', error.message);
       return this.getDemoResults();
     }
   }
