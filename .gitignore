@@ -60,3 +60,4 @@ tmp/
 
 # Uploads (si no usas Cloudinary, descomentar)
 # backend/uploads/
+.vercel

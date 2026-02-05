@@ -1,26 +1,67 @@
 @import "tailwindcss";
 
 :root {
+  /* Paleta Dendrosfera */
+  --color-primary-dark: #485935;
+  --color-primary-medium: #93A267;
+  --color-primary-light: #CADBB7;
+  --color-neutral-light: #FBFBFB;
+  --color-neutral-cream: #F5F5F0;
+  --color-bright-green: #5a7a3d;
+  --color-bright-green-alt: #6b8e4a;
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #2c2c2c;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --color-primary-dark: #485935;
+  --color-primary-medium: #93A267;
+  --color-primary-light: #CADBB7;
+  --color-neutral: #FBFBFB;
+  --color-bright: #5a7a3d;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scroll suave */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Mejoras para responsividad */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 390px) {
+  html {
+    font-size: 13px;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-neutral-light);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary-medium);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-dark);
 }
