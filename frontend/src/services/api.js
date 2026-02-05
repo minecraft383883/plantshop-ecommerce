@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://plantshop-ecommerce-production.up.railway.app/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://plantshop-ecommerce-production.up.railway.app/api',
   headers: {
     'Content-Type': 'application/json'
   }
