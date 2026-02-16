@@ -9,6 +9,7 @@ const productRoutes = require('./routes/productRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const plantIdentificationRoutes = require('./routes/plantIdentificationRoutes');
+const dendrosferaRoutes = require('./routes/dendrosferaRoutes'); // ← NUEVA
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,7 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Rutas
 app.get('/api/health', (req, res) => {
-  res.json({ message: 'API de Catálogo de Plantas funcionando ✅' });
+  res.json({ message: 'API de Dendrosfera funcionando ✅' });
 });
 
 app.use('/api/auth', authRoutes);
@@ -28,6 +29,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/plant-id', plantIdentificationRoutes);
+app.use('/api/dendrosfera', dendrosferaRoutes); // ← NUEVA
 
 // Manejo de errores global
 app.use((err, req, res, next) => {
