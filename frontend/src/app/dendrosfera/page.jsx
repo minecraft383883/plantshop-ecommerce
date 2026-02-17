@@ -1,0 +1,251 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Navbar from '@/components/Navbar';
+import { FiDroplet, FiCheckCircle, FiShoppingCart, FiPackage } from 'react-icons/fi';
+import { dendrosferaService } from '@/services/dendrosferaService';
+
+export default function DendrosferaPage() {
+  const [guides, setGuides] = useState([]);
+  const [selectedPackage, setSelectedPackage] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadGuides();
+  }, []);
+
+  const loadGuides = async () => {
+    try {
+      const data = await dendrosferaService.getAllGuides();
+      setGuides(data.guides || []);
+    } catch (error) {
+      console.error('Error cargando guías:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const packages = [
+    { id: 1, name: 'Paquete Básico', spheres: 50, price: 500, savings: 0 },
+    { id: 2, name: 'Paquete Estándar', spheres: 150, price: 1350, savings: 150 },
+    { id: 3, name: 'Paquete Premium', spheres: 300, price: 2400, savings: 600 },
+  ];
+
+  const handleAddToCart = (pkg) => {
+    // Implementar lógica del carrito (similar a la del identificador)
+    alert(`Agregado: ${pkg.name} - ${pkg.spheres} esferas`);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+      <Navbar />
+
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-green-600 to-green-700 text-white py-20">
+        <div className="container mx-auto px-4 text-center">
+          <div className="inline-block bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full mb-6">
+            <span className="font-bold text-lg">🌿 Nutriente Natural para Plantas</span>
+          </div>
+          <h1 className="text-6xl font-bold mb-6">Dendrosfera</h1>
+          <p className="text-2xl text-green-100 max-w-3xl mx-auto mb-8">
+            Mejora el crecimiento, rendimiento y salud de tus plantas con nuestro nutriente en esferas de liberación controlada
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <a
+              href="/identificar"
+              className="bg-white text-green-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-50 transition shadow-lg inline-flex items-center gap-2"
+            >
+              <FiDroplet size={24} />
+              Identificar mi Planta
+            </a>
+            <a
+              href="#paquetes"
+              className="bg-green-500 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-400 transition shadow-lg inline-flex items-center gap-2"
+            >
+              <FiShoppingCart size={24} />
+              Ver Paquetes
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Beneficios */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center text-gray-800 mb-12">
+            ¿Por Qué Dendrosfera?
+          </h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: '🌱',
+                title: 'Crecimiento Acelerado',
+                desc: 'Nutrientes de liberación controlada que estimulan el crecimiento saludable'
+              },
+              {
+                icon: '💚',
+                title: '100% Natural',
+                desc: 'Formulación orgánica sin químicos dañinos para tus plantas y el ambiente'
+              },
+              {
+                icon: '⏱️',
+                title: 'Fácil Aplicación',
+                desc: 'Solo aplica las esferas según el tipo de planta. Sin mezclas complicadas'
+              },
+              {
+                icon: '🌿',
+                title: 'Para Todo Tipo de Plantas',
+                desc: 'Funciona en suculentas, plantas de interior, exterior, hierbas y más'
+              },
+              {
+                icon: '📈',
+                title: 'Resultados Visibles',
+                desc: 'Hojas más verdes, flores más abundantes y plantas más resistentes'
+              },
+              {
+                icon: '💧',
+                title: 'Ahorro de Tiempo',
+                desc: 'Aplicación semanal o quincenal según la planta. Olvídate de fertilizar diario'
+              },
+            ].map((benefit, index) => (
+              <div key={index} className="text-center p-6 rounded-xl bg-green-50 hover:shadow-lg transition">
+                <div className="text-5xl mb-4">{benefit.icon}</div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">{benefit.title}</h3>
+                <p className="text-gray-600">{benefit.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Tabla de Guía */}
+      <section className="py-16 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center text-gray-800 mb-4">
+            Guía de Uso por Tipo de Planta
+          </h2>
+          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+            Cada tipo de planta tiene necesidades diferentes. Consulta nuestra guía para saber la dosis exacta.
+          </p>
+
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gradient-to-r from-green-600 to-green-700 text-white">
+                  <tr>
+                    <th className="px-6 py-4 text-left font-bold">Tipo de Planta</th>
+                    <th className="px-6 py-4 text-left font-bold">Ejemplos</th>
+                    <th className="px-6 py-4 text-left font-bold">Dosis</th>
+                    <th className="px-6 py-4 text-left font-bold">Frecuencia</th>
+                    <th className="px-6 py-4 text-left font-bold">Consumo/Mes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {guides.map((guide, index) => (
+                    <tr
+                      key={guide.id}
+                      className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}
+                    >
+                      <td className="px-6 py-4 font-bold text-gray-800">{guide.plant_type}</td>
+                      <td className="px-6 py-4 text-gray-600 text-sm">{guide.examples}</td>
+                      <td className="px-6 py-4 text-green-600 font-semibold">{guide.dose_per_application}</td>
+                      <td className="px-6 py-4 text-gray-600">{guide.frequency}</td>
+                      <td className="px-6 py-4 font-semibold text-gray-800">{guide.monthly_consumption}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="text-center mt-8">
+            <a
+              href="/identificar"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-green-700 hover:to-green-800 transition shadow-lg"
+            >
+              <FiDroplet size={24} />
+              ¿No sabes qué tipo es tu planta? Identifícala aquí
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Paquetes */}
+      <section id="paquetes" className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center text-gray-800 mb-4">
+            Elige Tu Paquete
+          </h2>
+          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+            Selecciona el paquete que mejor se adapte a tus necesidades
+          </p>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {packages.map((pkg, index) => (
+              <div
+                key={pkg.id}
+                className={`relative rounded-2xl p-8 border-2 transition hover:shadow-2xl ${
+                  index === 1
+                    ? 'border-green-500 bg-green-50 scale-105'
+                    : 'border-gray-300 bg-white hover:border-green-400'
+                }`}
+              >
+                {index === 1 && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-2 rounded-full font-bold text-sm">
+                    ⭐ MÁS POPULAR
+                  </div>
+                )}
+
+                <div className="text-center">
+                  <div className="text-5xl mb-4">
+                    <FiPackage className="mx-auto text-green-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">{pkg.name}</h3>
+                  <div className="text-5xl font-bold text-green-600 mb-2">
+                    ${pkg.price}
+                    <span className="text-lg text-gray-500"> MXN</span>
+                  </div>
+                  <p className="text-gray-600 mb-1">{pkg.spheres} esferas</p>
+                  <p className="text-sm text-gray-500 mb-6">${(pkg.price / pkg.spheres).toFixed(2)} por esfera</p>
+
+                  {pkg.savings > 0 && (
+                    <div className="bg-yellow-100 border-2 border-yellow-400 rounded-lg p-2 mb-6">
+                      <p className="text-yellow-800 font-bold text-sm">
+                        🎉 Ahorra ${pkg.savings} MXN
+                      </p>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => handleAddToCart(pkg)}
+                    className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-lg font-bold hover:from-green-700 hover:to-green-800 transition shadow-lg flex items-center justify-center gap-2"
+                  >
+                    <FiShoppingCart size={20} />
+                    Agregar al Carrito
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Final */}
+      <section className="py-16 bg-gradient-to-r from-green-600 to-green-700 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-4xl font-bold mb-6">¿Listo para Ver Tus Plantas Florecer?</h2>
+          <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
+            Identifica tu planta y recibe recomendaciones personalizadas de uso
+          </p>
+          <a
+            href="/identificar"
+            className="inline-flex items-center gap-2 bg-white text-green-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-50 transition shadow-lg"
+          >
+            <FiDroplet size={24} />
+            Identificar Mi Planta Ahora
+          </a>
+        </div>
+      </section>
+    </div>
+  );
+}
