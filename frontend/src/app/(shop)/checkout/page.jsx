@@ -215,7 +215,7 @@ export default function CheckoutPage() {
                 {items.map(item => (
                   <div key={item.id} className="flex gap-3 pb-3 border-b">
                     <img
-                      src={item.imagen_url || '/placeholder.png'}
+                      src={item.imagen_url || '/images/dendrosfera.jpg'}
                       alt={item.nombre}
                       className="w-16 h-16 object-cover rounded"
                     />

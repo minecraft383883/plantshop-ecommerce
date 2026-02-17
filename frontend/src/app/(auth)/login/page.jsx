@@ -124,15 +124,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Demo credentials */}
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <p className="text-xs text-blue-800 font-semibold mb-2">
-              💡 Credenciales de prueba:
-            </p>
-            <p className="text-xs text-blue-700">
-              Admin: admin@plantas.com / admin123
-            </p>
-          </div>
+         
         </div>
 
         <div className="text-center mt-6">

@@ -1,14 +1,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import { FiDroplet, FiCheckCircle, FiShoppingCart, FiPackage } from 'react-icons/fi';
 import { dendrosferaService } from '@/services/dendrosferaService';
+import useCartStore from '@/store/cartStore'; 
+import Toast from '@/components/Toast';
 
 export default function DendrosferaPage() {
   const [guides, setGuides] = useState([]);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const [showToast, setShowToast] = useState(false);
+  const [toastData, setToastData] = useState(null);
+  
+  const addItem = useCartStore((state) => state.addItem); // NUEVO
+  const router = useRouter();
 
   useEffect(() => {
     loadGuides();
@@ -25,6 +34,9 @@ export default function DendrosferaPage() {
     }
   };
 
+
+  
+
   const packages = [
     { id: 1, name: 'Paquete Básico', spheres: 50, price: 500, savings: 0 },
     { id: 2, name: 'Paquete Estándar', spheres: 150, price: 1350, savings: 150 },
@@ -32,13 +44,41 @@ export default function DendrosferaPage() {
   ];
 
   const handleAddToCart = (pkg) => {
-    // Implementar lógica del carrito (similar a la del identificador)
-    alert(`Agregado: ${pkg.name} - ${pkg.spheres} esferas`);
+  const product = {
+    id: `dendrosfera-${pkg.id}`,
+    nombre: pkg.name,
+    precio: pkg.price,
+    descripcion: `${pkg.spheres} esferas de Dendrosfera`,
+    imagen: '/images/dendrosfera.jpg',
   };
+  
+  addItem(product);
+  
+   // ⬇️ AGREGAR ESTAS LÍNEAS (en lugar del alert)
+  setToastData(pkg); // Guardar info del paquete
+  setShowToast(true); // Mostrar el toast
+  // ⬆️ FIN LÍNEAS NUEVAS
+  
+  // Mejor mensaje con opción de ir al carrito
+  
+};
+
+
+  
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
       <Navbar />
+ <Toast
+      show={showToast}
+      onClose={() => setShowToast(false)}
+      title="Producto agregado al carrito"
+      message={toastData ? `${toastData.name} - ${toastData.spheres} esferas` : ''}
+      onAction={() => router.push('/carrito')}
+      actionText="Ver Carrito"
+      duration={3000}
+    />
 
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-green-600 to-green-700 text-white py-20">

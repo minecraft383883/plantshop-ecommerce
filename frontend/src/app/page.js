@@ -270,7 +270,7 @@ export default function HomePage() {
             <Link href="/" className="hover:text-white transition">Inicio</Link>
             <Link href="/identificar" className="hover:text-white transition">Identificar</Link>
             <Link href="/dendrosfera" className="hover:text-white transition">Producto</Link>
-            <Link href="/auth/login" className="hover:text-white transition">Login</Link>
+            <Link href="/login" className="hover:text-white transition">Login</Link>
           </div>
           <p className="mt-8 text-xs">© 2026 Dendrosfera. Todos los derechos reservados.</p>
         </div>

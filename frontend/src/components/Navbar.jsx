@@ -1,23 +1,38 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { FiShoppingCart, FiUser, FiMenu, FiX, FiLogOut } from 'react-icons/fi';
 import { GiPlantSeed } from 'react-icons/gi';
+import useCartStore from '@/store/cartStore';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [user, setUser] = useState(null); // ⬅️ NUEVO: Estado para el usuario
   const pathname = usePathname();
   const router = useRouter();
   
-  // Verificar si hay usuario logueado
-  const user = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || 'null') : null;
+  const getTotalItems = useCartStore((state) => state.getTotalItems);
+  
+  // ⬅️ ACTUALIZADO: Leer usuario Y carrito después de montar
+  useEffect(() => {
+    setMounted(true);
+    // Leer usuario de localStorage solo en el cliente
+    if (typeof window !== 'undefined') {
+      const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+      setUser(storedUser);
+    }
+  }, []);
+  
+  const totalItems = mounted ? getTotalItems() : 0;
   const isAdmin = user?.rol === 'admin';
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    setUser(null); // ⬅️ NUEVO: Actualizar estado
     router.push('/');
   };
 
@@ -58,44 +73,54 @@ export default function Navbar() {
 
           {/* Acciones Desktop */}
           <div className="hidden md:flex items-center gap-4">
-            {/* Carrito */}
+            {/* Carrito CON BADGE */}
             <Link
-              href="/shop/carrito"
+              href="/carrito"
               className="relative text-white hover:text-green-200 transition"
             >
               <FiShoppingCart size={24} />
-              {/* Badge cantidad (implementar después) */}
+              {mounted && totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {totalItems}
+                </span>
+              )}
             </Link>
 
-            {/* Usuario */}
-            {user ? (
-              <div className="flex items-center gap-3">
-                {isAdmin && (
-                  <Link
-                    href="/admin"
-                    className="text-white hover:text-green-200 font-semibold"
+            {/* ⬇️ ACTUALIZADO: Usuario con mounted */}
+            {mounted ? (
+              user ? (
+                <div className="flex items-center gap-3">
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      className="text-white hover:text-green-200 font-semibold"
+                    >
+                      Panel Admin
+                    </Link>
+                  )}
+                  <span className="text-white text-sm">Hola, {user.nombre}</span>
+                  <button
+                    onClick={handleLogout}
+                    className="text-white hover:text-red-300 transition"
+                    title="Cerrar sesión"
                   >
-                    Panel Admin
-                  </Link>
-                )}
-                <span className="text-white text-sm">Hola, {user.nombre}</span>
-                <button
-                  onClick={handleLogout}
-                  className="text-white hover:text-red-300 transition"
-                  title="Cerrar sesión"
+                    <FiLogOut size={20} />
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  className="flex items-center gap-2 bg-white text-green-600 px-4 py-2 rounded-lg font-bold hover:bg-green-50 transition"
                 >
-                  <FiLogOut size={20} />
-                </button>
-              </div>
+                  <FiUser size={18} />
+                  Iniciar Sesión
+                </Link>
+              )
             ) : (
-              <Link
-                href="/auth/login"
-                className="flex items-center gap-2 bg-white text-green-600 px-4 py-2 rounded-lg font-bold hover:bg-green-50 transition"
-              >
-                <FiUser size={18} />
-                Iniciar Sesión
-              </Link>
+              // ⬅️ NUEVO: Placeholder mientras carga
+              <div className="w-32 h-10 bg-white/20 rounded-lg animate-pulse"></div>
             )}
+            {/* ⬆️ FIN ACTUALIZACIÓN */}
           </div>
 
           {/* Menú Mobile */}
@@ -121,42 +146,47 @@ export default function Navbar() {
               </Link>
             ))}
             <Link
-              href="/shop/carrito"
+              href="/carrito"
               className="block text-white py-2 px-4 hover:bg-green-600 rounded"
               onClick={() => setIsMenuOpen(false)}
             >
-              🛒 Carrito
+              🛒 Carrito {mounted && totalItems > 0 && `(${totalItems})`}
             </Link>
-            {user ? (
-              <>
-                {isAdmin && (
-                  <Link
-                    href="/admin"
-                    className="block text-white py-2 px-4 hover:bg-green-600 rounded"
-                    onClick={() => setIsMenuOpen(false)}
+            
+            {/* ⬇️ ACTUALIZADO: Menú mobile con mounted */}
+            {mounted && (
+              user ? (
+                <>
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      className="block text-white py-2 px-4 hover:bg-green-600 rounded"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Panel Admin
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left text-white py-2 px-4 hover:bg-green-600 rounded"
                   >
-                    Panel Admin
-                  </Link>
-                )}
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    setIsMenuOpen(false);
-                  }}
-                  className="block w-full text-left text-white py-2 px-4 hover:bg-green-600 rounded"
+                    Cerrar Sesión
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  className="block text-white py-2 px-4 hover:bg-green-600 rounded"
+                  onClick={() => setIsMenuOpen(false)}
                 >
-                  Cerrar Sesión
-                </button>
-              </>
-            ) : (
-              <Link
-                href="/auth/login"
-                className="block text-white py-2 px-4 hover:bg-green-600 rounded"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Iniciar Sesión
-              </Link>
+                  Iniciar Sesión
+                </Link>
+              )
             )}
+            {/* ⬆️ FIN ACTUALIZACIÓN */}
           </div>
         )}
       </div>

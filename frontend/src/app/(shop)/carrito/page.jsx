@@ -1,54 +1,40 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import { FiTrash2, FiShoppingCart, FiArrowRight } from 'react-icons/fi';
+import useCartStore from '@/store/cartStore'; // ⬅️ USAR EL STORE
 
 export default function CarritoPage() {
-  const [cartItems, setCartItems] = useState([]);
   const router = useRouter();
+  
+  // ⬅️ USAR LOS MÉTODOS DEL STORE EN LUGAR DE LOCALSTORAGE
+  const items = useCartStore((state) => state.items);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const removeItem = useCartStore((state) => state.removeItem);
+  const clearCart = useCartStore((state) => state.clearCart);
+  const getTotalPrice = useCartStore((state) => state.getTotalPrice);
 
-  useEffect(() => {
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-    setCartItems(cart);
-  }, []);
-
-  const updateQuantity = (index, newQuantity) => {
-    if (newQuantity < 1) return;
-    
-    const updatedCart = [...cartItems];
-    updatedCart[index].cantidad = newQuantity;
-    updatedCart[index].subtotal = updatedCart[index].precio * newQuantity;
-    
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
-    setCartItems(updatedCart);
-  };
-
-  const removeItem = (index) => {
-    const updatedCart = cartItems.filter((_, i) => i !== index);
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
-    setCartItems(updatedCart);
-  };
-
-  const clearCart = () => {
+  const handleClearCart = () => {
     if (confirm('¿Vaciar carrito?')) {
-      localStorage.removeItem('cart');
-      setCartItems([]);
+      clearCart();
     }
   };
-
-  const total = cartItems.reduce((sum, item) => sum + item.subtotal, 0);
 
   const handleCheckout = () => {
-    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    const user = typeof window !== 'undefined' 
+      ? JSON.parse(localStorage.getItem('user') || 'null') 
+      : null;
+    
     if (!user) {
       alert('Debes iniciar sesión para continuar');
-      router.push('/auth/login');
+      router.push('/login');
       return;
     }
-    router.push('/shop/checkout');
+    router.push('/checkout');
   };
+
+  const total = getTotalPrice();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
@@ -62,9 +48,9 @@ export default function CarritoPage() {
               <FiShoppingCart size={36} className="text-green-600" />
               <h1 className="text-4xl font-bold text-gray-800">Mi Carrito</h1>
             </div>
-            {cartItems.length > 0 && (
+            {items.length > 0 && (
               <button
-                onClick={clearCart}
+                onClick={handleClearCart}
                 className="text-red-600 hover:text-red-700 font-semibold flex items-center gap-2"
               >
                 <FiTrash2 size={20} />
@@ -73,7 +59,7 @@ export default function CarritoPage() {
             )}
           </div>
 
-          {cartItems.length === 0 ? (
+          {items.length === 0 ? (
             /* Carrito Vacío */
             <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
               <div className="text-8xl mb-6">🛒</div>
@@ -93,50 +79,53 @@ export default function CarritoPage() {
             <div className="grid lg:grid-cols-3 gap-8">
               {/* Items */}
               <div className="lg:col-span-2 space-y-4">
-                {cartItems.map((item, index) => (
-                  <div key={index} className="bg-white rounded-xl shadow-lg p-6">
+                {items.map((item) => (
+                  <div key={item.id} className="bg-white rounded-xl shadow-lg p-6">
                     <div className="flex gap-6">
                       {/* Imagen */}
-                      <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center text-white text-3xl font-bold flex-shrink-0">
-                        🌿
-                      </div>
+                      {item.imagen ? (
+                        <img 
+                          src={item.imagen} 
+                          alt={item.nombre}
+                          className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center text-white text-3xl font-bold flex-shrink-0">
+                          🌿
+                        </div>
+                      )}
 
                       {/* Info */}
                       <div className="flex-1">
                         <h3 className="text-xl font-bold text-gray-800 mb-2">{item.nombre}</h3>
                         
-                        {item.metadata && (
-                          <div className="text-sm text-gray-600 mb-3 space-y-1">
-                            <p>✓ Para: <span className="font-semibold">{item.metadata.plantCommonName || item.metadata.plantType}</span></p>
-                            <p>✓ Plan: <span className="font-semibold">{item.metadata.plan.months} {item.metadata.plan.months === 1 ? 'mes' : 'meses'}</span></p>
-                            <p>✓ Consumo estimado: <span className="font-semibold">{item.metadata.plan.monthlyConsumption}</span></p>
-                          </div>
+                        {item.descripcion && (
+                          <p className="text-sm text-gray-600 mb-3">{item.descripcion}</p>
                         )}
 
                         <div className="flex items-center justify-between">
                           {/* Cantidad */}
                           <div className="flex items-center gap-3">
                             <button
-                              onClick={() => updateQuantity(index, item.cantidad - 1)}
+                              onClick={() => updateQuantity(item.id, Math.max(1, item.cantidad - 1))}
                               className="w-8 h-8 bg-gray-200 rounded-lg font-bold hover:bg-gray-300 transition"
                             >
                               −
                             </button>
                             <span className="font-bold text-lg">{item.cantidad}</span>
                             <button
-                              onClick={() => updateQuantity(index, item.cantidad + 1)}
+                              onClick={() => updateQuantity(item.id, item.cantidad + 1)}
                               className="w-8 h-8 bg-gray-200 rounded-lg font-bold hover:bg-gray-300 transition"
                             >
                               +
                             </button>
-                            <span className="text-gray-600 text-sm ml-2">esferas</span>
                           </div>
 
                           {/* Precio */}
                           <div className="text-right">
                             <p className="text-sm text-gray-500">${item.precio.toFixed(2)} c/u</p>
                             <p className="text-2xl font-bold text-green-600">
-                              ${item.subtotal.toFixed(2)}
+                              ${(item.precio * item.cantidad).toFixed(2)}
                             </p>
                           </div>
                         </div>
@@ -144,7 +133,7 @@ export default function CarritoPage() {
 
                       {/* Eliminar */}
                       <button
-                        onClick={() => removeItem(index)}
+                        onClick={() => removeItem(item.id)}
                         className="text-red-500 hover:text-red-700 transition"
                       >
                         <FiTrash2 size={24} />
