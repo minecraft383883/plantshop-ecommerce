@@ -1,0 +1,27 @@
+### Health Check
+GET https://plantshop-ecommerce-production.up.railway.app/api/health
+
+### Obtener todas las guías
+GET https://plantshop-ecommerce-production.up.railway.app/api/dendrosfera/guides
+
+### Obtener recomendación por tipo (Monstera)
+GET https://plantshop-ecommerce-production.up.railway.app/api/dendrosfera/recommendation?plantType=Monstera
+
+### Obtener recomendación por tipo (Potus)
+GET https://plantshop-ecommerce-production.up.railway.app/api/dendrosfera/recommendation?plantType=Potus
+
+### Obtener recomendación desde especie científica
+POST https://plantshop-ecommerce-production.up.railway.app/api/dendrosfera/recommendation/from-species
+Content-Type: application/json
+
+{
+  "scientificName": "Monstera deliciosa"
+}
+
+### Probar con especie no mapeada
+POST https://plantshop-ecommerce-production.up.railway.app/api/dendrosfera/recommendation/from-species
+Content-Type: application/json
+
+{
+  "scientificName": "Rosa gallica"
+}

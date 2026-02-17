@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import Navbar from '@/components/Navbar';
 import { FiCamera, FiUpload, FiX, FiCheckCircle } from 'react-icons/fi';
 import api from '@/services/api';
+import DendrosferaRecommendation from '@/components/DendrosferaRecommendation'; 
 
 export default function IdentificarPage() {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -12,6 +13,8 @@ export default function IdentificarPage() {
   const [results, setResults] = useState(null);
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
+  const [dendrosferaInfo, setDendrosferaInfo] = useState(null); 
+  const [topResult, setTopResult] = useState(null); 
 
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
@@ -44,6 +47,8 @@ export default function IdentificarPage() {
 
     if (response.data.success) {
       setResults(response.data.results);
+      setTopResult(response.data.results?.[0] || null); // ← NUEVO: guardar el mejor resultado
+      setDendrosferaInfo(response.data.dendrosfera || null); // ← NUEVO: guardar info de Dendrosfera
       
       // Mostrar info si es modo demo
       if (response.data.demo) {
@@ -59,6 +64,7 @@ export default function IdentificarPage() {
     setLoading(false);
   }
 };
+
 
   const handleReset = () => {
     setSelectedImage(null);
@@ -253,7 +259,24 @@ export default function IdentificarPage() {
                 </div>
               )}
             </div>
-          </div>
+           </div> {/* Cierra el grid de 2 columnas */}
+
+          {/* ========== NUEVO: Recomendación Dendrosfera ========== */}
+          {dendrosferaInfo?.recommendation && (
+            <div className="mt-12">
+              <DendrosferaRecommendation
+                recommendation={dendrosferaInfo.recommendation}
+                plantInfo={topResult}
+                onAddToCart={(pkg) => {
+                  // TODO: Implementar agregar al carrito
+                  console.log('Plan seleccionado:', pkg);
+                  console.log('Tipo de planta:', dendrosferaInfo.plantType);
+                  alert(`Plan de ${pkg.months} mes(es) - ${pkg.spheres} esferas agregado al carrito (próximamente)`);
+                }}
+              />
+            </div>
+          )}
+          {/* ========== FIN NUEVO ========== */}
 
           {/* CTA para ver catálogo */}
           {results && (
