@@ -9,7 +9,7 @@ import useAuthStore from '@/store/authStore';
 export default function LoginPage() {
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);
-  
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -32,7 +32,7 @@ export default function LoginPage() {
 
     try {
       const response = await authService.login(formData);
-      
+
       // Guardar en store y localStorage
       setAuth(response.user, response.token);
       localStorage.setItem('token', response.token);
@@ -40,9 +40,9 @@ export default function LoginPage() {
 
       // Redirigir según rol
       if (response.user.rol === 'admin') {
-        router.push('/admin');
+        router.push('/');
       } else {
-        router.push('/catalogo');
+        router.push('/');
       }
     } catch (err) {
       setError(err.response?.data?.error || 'Error al iniciar sesión');
@@ -124,7 +124,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-         
+
         </div>
 
         <div className="text-center mt-6">

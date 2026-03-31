@@ -9,7 +9,7 @@ import useAuthStore from '@/store/authStore';
 export default function RegisterPage() {
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);
-  
+
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
@@ -50,14 +50,14 @@ export default function RegisterPage() {
     try {
       const { confirmPassword, ...registerData } = formData;
       const response = await authService.register(registerData);
-      
+
       // Guardar en store y localStorage
       setAuth(response.user, response.token);
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
 
       // Redirigir al catálogo
-      router.push('/catalogo');
+      router.push('/');
     } catch (err) {
       setError(err.response?.data?.error || 'Error al registrar usuario');
     } finally {

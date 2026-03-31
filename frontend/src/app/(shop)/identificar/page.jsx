@@ -4,9 +4,16 @@ import { useState, useRef } from 'react';
 import Navbar from '@/components/Navbar';
 import { FiCamera, FiUpload, FiX, FiCheckCircle } from 'react-icons/fi';
 import api from '@/services/api';
-import DendrosferaRecommendation from '@/components/DendrosferaRecommendation'; 
+import DendrosferaRecommendation from '@/components/DendrosferaRecommendation';
+import useCartStore from '@/store/cartStore';
+import Toast from '@/components/Toast';
+import { useRouter } from 'next/navigation';
 
 export default function IdentificarPage() {
+  const router = useRouter();
+  const addItem = useCartStore((state) => state.addItem);
+  const [showToast, setShowToast] = useState(false);
+  const [toastData, setToastData] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -268,10 +275,16 @@ export default function IdentificarPage() {
                 recommendation={dendrosferaInfo.recommendation}
                 plantInfo={topResult}
                 onAddToCart={(pkg) => {
-                  // TODO: Implementar agregar al carrito
-                  console.log('Plan seleccionado:', pkg);
-                  console.log('Tipo de planta:', dendrosferaInfo.plantType);
-                  alert(`Plan de ${pkg.months} mes(es) - ${pkg.spheres} esferas agregado al carrito (próximamente)`);
+                  const product = {
+                    id: `dendrosfera-rec-${pkg.months}`,
+                    nombre: `Dendrosfera - Plan ${pkg.months} ${pkg.months === 1 ? 'Mes' : 'Meses'}`,
+                    precio: pkg.spheres * 10, // precio estimado por esfera
+                    descripcion: `${pkg.spheres} esferas para ${dendrosferaInfo.plantType || topResult?.nombre_comun || 'tu planta'}`,
+                    imagen: '/images/dendrosfera.jpg',
+                  };
+                  addItem(product);
+                  setToastData(pkg);
+                  setShowToast(true);
                 }}
               />
             </div>
@@ -297,6 +310,16 @@ export default function IdentificarPage() {
           )}
         </div>
       </div>
+
+      <Toast
+        show={showToast}
+        onClose={() => setShowToast(false)}
+        title="Producto agregado al carrito"
+        message={toastData ? `Plan ${toastData.months} ${toastData.months === 1 ? 'Mes' : 'Meses'} - ${toastData.spheres} esferas` : ''}
+        onAction={() => router.push('/carrito')}
+        actionText="Ver Carrito"
+        duration={3000}
+      />
     </div>
   );
 }

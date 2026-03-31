@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { FiChevronLeft, FiChevronRight, FiSearch } from 'react-icons/fi';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import { FiDroplet, FiCheckCircle, FiShoppingCart, FiPackage } from 'react-icons/fi';
@@ -12,6 +13,9 @@ export default function DendrosferaPage() {
   const [guides, setGuides] = useState([]);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [guidePage, setGuidePage] = useState(1);
+  const [guideSearch, setGuideSearch] = useState('');
+  const GUIDES_PER_PAGE = 10;
 
   const [showToast, setShowToast] = useState(false);
   const [toastData, setToastData] = useState(null);
@@ -168,6 +172,27 @@ export default function DendrosferaPage() {
             Cada tipo de planta tiene necesidades diferentes. Consulta nuestra guía para saber la dosis exacta.
           </p>
 
+          {/* Buscador */}
+          <div className="relative max-w-md mb-6">
+            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <input
+              type="text"
+              placeholder="Buscar por tipo de planta..."
+              value={guideSearch}
+              onChange={(e) => { setGuideSearch(e.target.value); setGuidePage(1); }}
+              className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-700 placeholder-gray-400 bg-white transition"
+            />
+            {guideSearch && (
+              <button
+                onClick={() => { setGuideSearch(''); setGuidePage(1); }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition text-lg leading-none"
+                title="Limpiar búsqueda"
+              >
+                ×
+              </button>
+            )}
+          </div>
+
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -181,21 +206,91 @@ export default function DendrosferaPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {guides.map((guide, index) => (
-                    <tr
-                      key={guide.id}
-                      className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}
-                    >
-                      <td className="px-6 py-4 font-bold text-gray-800">{guide.plant_type}</td>
-                      <td className="px-6 py-4 text-gray-600 text-sm">{guide.examples}</td>
-                      <td className="px-6 py-4 text-green-600 font-semibold">{guide.dose_per_application}</td>
-                      <td className="px-6 py-4 text-gray-600">{guide.frequency}</td>
-                      <td className="px-6 py-4 font-semibold text-gray-800">{guide.monthly_consumption}</td>
-                    </tr>
-                  ))}
+                  {(() => {
+                    const filtered = guides.filter(g =>
+                      g.plant_type?.toLowerCase().includes(guideSearch.toLowerCase())
+                    );
+                    const paginated = filtered.slice(
+                      (guidePage - 1) * GUIDES_PER_PAGE,
+                      guidePage * GUIDES_PER_PAGE
+                    );
+                    if (paginated.length === 0) {
+                      return (
+                        <tr>
+                          <td colSpan="5" className="px-6 py-12 text-center text-gray-400">
+                            🔍 No se encontraron plantas con &ldquo;{guideSearch}&rdquo;
+                          </td>
+                        </tr>
+                      );
+                    }
+                    return paginated.map((guide, index) => (
+                      <tr
+                        key={guide.id}
+                        className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}
+                      >
+                        <td className="px-6 py-4 font-bold text-gray-800">{guide.plant_type}</td>
+                        <td className="px-6 py-4 text-gray-600 text-sm">{guide.examples}</td>
+                        <td className="px-6 py-4 text-green-600 font-semibold">{guide.dose_per_application}</td>
+                        <td className="px-6 py-4 text-gray-600">{guide.frequency}</td>
+                        <td className="px-6 py-4 font-semibold text-gray-800">{guide.monthly_consumption}</td>
+                      </tr>
+                    ));
+                  })()}
                 </tbody>
               </table>
             </div>
+
+            {/* Paginación guías */}
+            {(() => {
+              const filtered = guides.filter(g =>
+                g.plant_type?.toLowerCase().includes(guideSearch.toLowerCase())
+              );
+              const totalPages = Math.ceil(filtered.length / GUIDES_PER_PAGE);
+              if (filtered.length <= GUIDES_PER_PAGE) return null;
+              return (
+                <div className="px-6 py-4 border-t bg-gray-50 flex items-center justify-between">
+                  <p className="text-sm text-gray-600">
+                    Mostrando{' '}
+                    <span className="font-semibold">{(guidePage - 1) * GUIDES_PER_PAGE + 1}</span>
+                    {' '}–{' '}
+                    <span className="font-semibold">{Math.min(guidePage * GUIDES_PER_PAGE, filtered.length)}</span>
+                    {' '}de{' '}
+                    <span className="font-semibold">{filtered.length}</span> registros
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setGuidePage(p => Math.max(1, p - 1))}
+                      disabled={guidePage === 1}
+                      className="flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                    >
+                      <FiChevronLeft size={16} />
+                      Anterior
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                      <button
+                        key={page}
+                        onClick={() => setGuidePage(page)}
+                        className={`w-9 h-9 rounded-lg text-sm font-medium transition ${
+                          page === guidePage
+                            ? 'bg-green-600 text-white shadow'
+                            : 'border border-gray-300 text-gray-700 bg-white hover:bg-gray-100'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setGuidePage(p => Math.min(totalPages, p + 1))}
+                      disabled={guidePage === totalPages}
+                      className="flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                    >
+                      Siguiente
+                      <FiChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           <div className="text-center mt-8">

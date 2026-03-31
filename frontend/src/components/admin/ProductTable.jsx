@@ -1,11 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { FiEdit2, FiTrash2, FiEye, FiEyeOff } from 'react-icons/fi';
+import { useState, useEffect } from 'react';
+import { FiEdit2, FiTrash2, FiEye, FiEyeOff, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+
+const ITEMS_PER_PAGE = 10;
 
 export default function ProductTable({ products, categories, onEdit, onDelete, onToggleStatus }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -13,6 +16,15 @@ export default function ProductTable({ products, categories, onEdit, onDelete, o
     const matchesCategory = filterCategory === 'all' || product.categoria_id === parseInt(filterCategory);
     return matchesSearch && matchesCategory;
   });
+
+  // Resetear a página 1 cuando cambian los filtros
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterCategory]);
+
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -66,14 +78,14 @@ export default function ProductTable({ products, categories, onEdit, onDelete, o
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredProducts.length === 0 ? (
+            {paginatedProducts.length === 0 ? (
               <tr>
                 <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
                   No hay productos para mostrar
                 </td>
               </tr>
             ) : (
-              filteredProducts.map((product) => (
+              paginatedProducts.map((product) => (
                 <tr key={product.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     {product.imagen_url ? (
@@ -153,6 +165,54 @@ export default function ProductTable({ products, categories, onEdit, onDelete, o
           </tbody>
         </table>
       </div>
+
+      {/* Paginación */}
+      {filteredProducts.length > 0 && (
+        <div className="px-6 py-4 border-t bg-gray-50 flex items-center justify-between">
+          <p className="text-sm text-gray-600">
+            Mostrando{' '}
+            <span className="font-semibold">{startIndex + 1}</span>
+            {' '}–{' '}
+            <span className="font-semibold">{Math.min(startIndex + ITEMS_PER_PAGE, filteredProducts.length)}</span>
+            {' '}de{' '}
+            <span className="font-semibold">{filteredProducts.length}</span> productos
+          </p>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+            >
+              <FiChevronLeft size={16} />
+              Anterior
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`w-9 h-9 rounded-lg text-sm font-medium transition ${
+                  page === currentPage
+                    ? 'bg-green-600 text-white shadow'
+                    : 'border border-gray-300 text-gray-700 bg-white hover:bg-gray-100'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+            >
+              Siguiente
+              <FiChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

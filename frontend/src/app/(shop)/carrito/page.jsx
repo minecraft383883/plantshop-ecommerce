@@ -1,11 +1,14 @@
 'use client';
 
+import { useState } from 'react';
+
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import { FiTrash2, FiShoppingCart, FiArrowRight } from 'react-icons/fi';
 import useCartStore from '@/store/cartStore'; // ⬅️ USAR EL STORE
 
 export default function CarritoPage() {
+  const [showConfirm, setShowConfirm] = useState(false);
   const router = useRouter();
   
   // ⬅️ USAR LOS MÉTODOS DEL STORE EN LUGAR DE LOCALSTORAGE
@@ -15,10 +18,11 @@ export default function CarritoPage() {
   const clearCart = useCartStore((state) => state.clearCart);
   const getTotalPrice = useCartStore((state) => state.getTotalPrice);
 
-  const handleClearCart = () => {
-    if (confirm('¿Vaciar carrito?')) {
-      clearCart();
-    }
+  const handleClearCart = () => setShowConfirm(true);
+
+  const confirmClear = () => {
+    clearCart();
+    setShowConfirm(false);
   };
 
   const handleCheckout = () => {
@@ -123,7 +127,9 @@ export default function CarritoPage() {
 
                           {/* Precio */}
                           <div className="text-right">
-                            <p className="text-sm text-gray-500">${item.precio.toFixed(2)} c/u</p>
+                            {item.cantidad > 1 && (
+                              <p className="text-sm text-gray-500">${item.precio.toFixed(2)} c/u</p>
+                            )}
                             <p className="text-2xl font-bold text-green-600">
                               ${(item.precio * item.cantidad).toFixed(2)}
                             </p>
@@ -182,6 +188,37 @@ export default function CarritoPage() {
           )}
         </div>
       </div>
+
+      {/* Modal confirmación vaciar carrito */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowConfirm(false)}
+          />
+          <div className="relative bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center">
+            <div className="text-5xl mb-4">🗑️</div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">¿Vaciar carrito?</h3>
+            <p className="text-gray-500 text-sm mb-6">
+              Se eliminarán todos los productos. Esta acción no se puede deshacer.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmClear}
+                className="flex-1 py-3 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 transition"
+              >
+                Sí, vaciar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
